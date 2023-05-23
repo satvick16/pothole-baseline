@@ -2,6 +2,7 @@ import os
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 # IOU calculation function
 def calculate_iou(boxA, boxB):
@@ -51,25 +52,26 @@ def calculate_f1(gt_boxes, pred_boxes, iou_threshold):
     
     return f1
 
-# get list of image files in /images directory
-img_dir = r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\images"
-img_files = os.listdir(img_dir)
-img_files = [f for f in img_files if f.endswith(".jpg")]
-
 scores = []
 f1_scores = []
 
+thingy = [f for f in os.listdir(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\model_labels") if f.endswith(".txt")]
+
 # loop through image files and corresponding label files in /labels directory
-for img_file in img_files:
-    label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\labels", img_file.replace(".jpg", ".txt").replace("image", "label"))
-    pred_label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\predictions", img_file.replace(".jpg", ".txt").replace("image", "label"))
+for thing in thingy:
+    label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\model_labels", thing)
+    pred_label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\yolo", thing)
+
+    if not Path(pred_label_file).is_file():
+        f = open(pred_label_file, "x")
+        f.close()
+        continue
 
     if os.stat(label_file).st_size == 0 or os.stat(pred_label_file).st_size == 0:
         scores.append(0)
         continue
 
     # load image and label files
-    img = Image.open(os.path.join(img_dir, img_file))
     label = np.loadtxt(label_file)
     pred_label = np.loadtxt(pred_label_file)
 
@@ -90,9 +92,14 @@ for img_file in img_files:
         scores.append(max_iou)
 
 # loop through image files and corresponding label files in /labels directory
-for img_file in img_files:
-    label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\labels", img_file.replace(".jpg", ".txt").replace("image", "label"))
-    pred_label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\predictions", img_file.replace(".jpg", ".txt").replace("image", "label"))
+for thing in thingy:
+    label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\model_labels", thing)
+    pred_label_file = os.path.join(r"C:\Users\16474\Desktop\potholes-baseline\final_dataset\test\yolo", thing)
+
+    if not Path(pred_label_file).is_file():
+        f = open(pred_label_file, "x")
+        f.close()
+        continue
 
     if os.stat(label_file).st_size == 0 and os.stat(pred_label_file).st_size != 0:
         pred_label = np.loadtxt(pred_label_file)
@@ -134,7 +141,6 @@ for img_file in img_files:
         continue
 
     # load image and label files
-    img = Image.open(os.path.join(img_dir, img_file))
     label = np.loadtxt(label_file)
     pred_label = np.loadtxt(pred_label_file)
 
